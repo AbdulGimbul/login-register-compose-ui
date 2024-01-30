@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBackIos
-import androidx.compose.material.icons.filled.ImportContacts
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Visibility
@@ -40,6 +40,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -52,11 +54,16 @@ import com.abdl.myloginregister.ui.theme.blue1
 import com.abdl.myloginregister.ui.theme.blue2
 
 @Composable
-fun RegisterScreen() {
+fun RegisterScreen(
+    onBackButtonClicked: () -> Unit,
+    onRegisterButtonClicked: () -> Unit,
+    onTextHereClicked: () -> Unit,
+) {
 
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var passwordVisibility by remember { mutableStateOf(false) }
 
     Column(
@@ -64,11 +71,17 @@ fun RegisterScreen() {
             .fillMaxWidth()
             .padding(16.dp)
     ) {
+        Spacer(modifier = Modifier.height(8.dp))
         Icon(
             imageVector = Icons.Default.ArrowBackIos,
             contentDescription = "Back",
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp)
+            modifier = Modifier
+                .clickable {
+                    onBackButtonClicked()
+                }
+                .padding(horizontal = 8.dp, vertical = 8.dp)
         )
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "Sign Up",
             style = MaterialTheme.typography.headlineMedium.copy(
@@ -81,13 +94,15 @@ fun RegisterScreen() {
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
             CustomTextfield(
                 value = username,
-                onValueChange = {username = it},
+                onValueChange = { username = it },
                 placeholder = "Username",
                 icon = Icons.Default.AccountCircle,
                 contentDesc = "Username"
             )
+            Spacer(modifier = Modifier.height(32.dp))
             CustomTextfield(
                 value = email,
                 onValueChange = { email = it },
@@ -95,6 +110,18 @@ fun RegisterScreen() {
                 icon = Icons.Default.Mail,
                 contentDesc = "Email"
             )
+            if (email.isNotEmpty() && !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Email tidak valid",
+                    color = Color.Red,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(32.dp))
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -108,7 +135,7 @@ fun RegisterScreen() {
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 16.dp)
+                    .padding(horizontal = 8.dp)
                     .border(
                         width = 2.dp,
                         color = Color.LightGray,
@@ -117,14 +144,78 @@ fun RegisterScreen() {
                 shape = RoundedCornerShape(12.dp),
                 trailingIcon = {
                     Icon(
-                        imageVector = if (passwordVisibility) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        imageVector = if (passwordVisibility) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                         contentDescription = "Visibility is wheter is true",
                         tint = Color.LightGray,
+                        modifier = Modifier
+                            .clickable {
+                                passwordVisibility = !passwordVisibility
+                            }
                     )
-                }
+                },
+                visualTransformation = if (!passwordVisibility) PasswordVisualTransformation() else VisualTransformation.None,
             )
+            if (password.isNotEmpty() && password.length < 6) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Password minimal 6 karakter",
+                    color = Color.Red,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                placeholder = { Text("Ketikkan ulang password", color = Color.LightGray) },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = "Konfirmasi Password",
+                        tint = Color.LightGray
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+                    .border(
+                        width = 2.dp,
+                        color = Color.LightGray,
+                        shape = RoundedCornerShape(12.dp)
+                    ),
+                shape = RoundedCornerShape(12.dp),
+                trailingIcon = {
+                    Icon(
+                        imageVector = if (passwordVisibility) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                        contentDescription = "Visibility is wheter is true",
+                        tint = Color.LightGray,
+                        modifier = Modifier
+                            .clickable {
+                                passwordVisibility = !passwordVisibility
+                            }
+                    )
+                },
+                visualTransformation = if (!passwordVisibility) PasswordVisualTransformation() else VisualTransformation.None,
+            )
+            if (confirmPassword.isNotEmpty() && confirmPassword != password) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Password tidak sama",
+                    color = Color.Red,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = { },
+                onClick = {
+                    onRegisterButtonClicked()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp, vertical = 16.dp)
@@ -240,14 +331,20 @@ fun RegisterScreen() {
             ) {
                 Text(
                     text = "Have an account? Log in",
-                    color = Color.LightGray
+                    color = Color.LightGray,
+                    modifier = Modifier
+                        .padding(4.dp)
                 )
-                Text(text = " ")
                 Text(
                     text = "here.",
                     color = blue1,
                     fontWeight = FontWeight.SemiBold,
-                    textDecoration = TextDecoration.Underline
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier
+                        .clickable {
+                            onTextHereClicked()
+                        }
+                        .padding(4.dp)
                 )
             }
         }
@@ -261,6 +358,10 @@ fun RegisterScreen() {
 @Composable
 fun RegisterPreview() {
     MyLoginRegisterTheme {
-        RegisterScreen()
+        RegisterScreen(
+            onBackButtonClicked = {},
+            onRegisterButtonClicked = {},
+            onTextHereClicked = {}
+        )
     }
 }

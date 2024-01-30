@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,6 +39,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,7 +53,10 @@ import com.abdl.myloginregister.ui.theme.blue1
 import com.abdl.myloginregister.ui.theme.blue2
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(
+    onLoginClicked: () -> Unit,
+    onTextHereClicked: () -> Unit,
+) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -78,6 +84,7 @@ fun LoginScreen() {
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
             CustomTextfield(
                 value = email,
                 onValueChange = { email = it },
@@ -85,6 +92,18 @@ fun LoginScreen() {
                 icon = Icons.Default.Mail,
                 contentDesc = "Email"
             )
+            if (email.isNotEmpty() && !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Email tidak valid",
+                    color = Color.Red,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(32.dp))
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -98,7 +117,7 @@ fun LoginScreen() {
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 16.dp)
+                    .padding(horizontal = 8.dp)
                     .border(
                         width = 2.dp,
                         color = Color.LightGray,
@@ -107,12 +126,29 @@ fun LoginScreen() {
                 shape = RoundedCornerShape(12.dp),
                 trailingIcon = {
                     Icon(
-                        imageVector = if (passwordVisibility) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        imageVector = if (passwordVisibility) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                         contentDescription = "Visibility is wheter is true",
                         tint = Color.LightGray,
+                        modifier = Modifier
+                            .clickable {
+                                passwordVisibility = !passwordVisibility
+                            }
                     )
-                }
+                },
+                visualTransformation = if (!passwordVisibility) PasswordVisualTransformation() else VisualTransformation.None,
             )
+            if (password.isNotEmpty() && password.length < 6) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Password minimal 6 karakter",
+                    color = Color.Red,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Forgot password?",
                 fontWeight = FontWeight.SemiBold,
@@ -123,7 +159,9 @@ fun LoginScreen() {
                     .padding(horizontal = 8.dp)
             )
             Button(
-                onClick = { },
+                onClick = {
+                    onLoginClicked()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp, vertical = 16.dp)
@@ -239,14 +277,19 @@ fun LoginScreen() {
             ) {
                 Text(
                     text = "No account? Sign up",
-                    color = Color.LightGray
+                    color = Color.LightGray,
+                    modifier = Modifier.padding(4.dp)
                 )
-                Text(text = " ")
                 Text(
                     text = "here.",
                     color = blue1,
                     fontWeight = FontWeight.SemiBold,
-                    textDecoration = TextDecoration.Underline
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier
+                        .clickable {
+                            onTextHereClicked()
+                        }
+                        .padding(4.dp)
                 )
             }
         }
@@ -260,6 +303,6 @@ fun LoginScreen() {
 @Composable
 fun LoginPreview() {
     MyLoginRegisterTheme {
-        LoginScreen()
+        LoginScreen(onLoginClicked = {}, onTextHereClicked = {})
     }
 }
